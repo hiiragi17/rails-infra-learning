@@ -1,0 +1,41 @@
+# docker-compose.yml
+#
+# ハンズオン Step 3 以降で使う MySQL を立ち上げる設定です。
+#
+# === 起動前の準備 ===
+# 1. .env.example を .env としてコピー: cp .env.example .env
+# 2. 必要に応じて .env の中身 (パスワード等) を変更
+#
+# === 操作 ===
+# 起動: docker compose up -d
+# 停止: docker compose down
+# 中の MySQL に入る: docker compose exec mysql mysql -uroot -p"$MYSQL_ROOT_PASSWORD" playground
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: ar-mysql
+    # 環境変数は .env ファイルから自動で読み込まれる (docker compose の標準動作)
+    # ここでは「.env のこの変数を使う」という参照だけを書く。
+    # 実際のパスワードはリポジトリに含めない。
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      # ホストの 3306 に MySQL を露出
+      # localhost:3306 で接続できるようにする
+      - "3306:3306"
+    # ヘルスチェック: MySQL が応答可能になるまで待てるようにする
+    # パスワードが必要なので、ここでも変数参照で書く
+    healthcheck:
+      test:
+        - "CMD"
+        - "mysqladmin"
+        - "ping"
+        - "-h"
+        - "localhost"
+        - "-uroot"
+        - "-p${MYSQL_ROOT_PASSWORD}"
+      interval: 5s
+      timeout: 3s
+      retries: 10
