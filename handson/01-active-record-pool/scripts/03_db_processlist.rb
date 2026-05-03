@@ -85,7 +85,7 @@ show_db_side
 
 puts
 puts "  💡 別ターミナルで以下を実行すると、リアルタイムでDBを覗けます:"
-puts %{     docker exec -it ar-mysql mysql -uroot -ppass -e "SHOW PROCESSLIST;"}
+puts %{     finch exec -it ar-mysql mysql -uroot -ppass -e "SHOW PROCESSLIST;"}
 
 threads.each(&:join)
 
@@ -102,4 +102,4 @@ puts "- これは「使い回す」ためにわざと切らずに置いてある
 puts "- 切りたい時は pool.disconnect! を呼ぶ、または idle_timeout を設定する"
 
 puts
-puts "後片付け: docker stop ar-mysql && docker rm ar-mysql"
+puts "後片付け: finch stop ar-mysql && finch rm ar-mysql"
