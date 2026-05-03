@@ -1,16 +1,26 @@
-# 04b_transaction_leak.rb
+# 04b_transaction_leak.rb (MySQL版)
 # 課題B: トランザクションをすり抜けるバグの再現
 #
 # 実行: bundle exec ruby 04b_transaction_leak.rb
 #
 # Sidekiqジョブをトランザクション内でenqueueすると、
 # ロールバックしてもジョブは消えない、という有名なバグの正体。
+#
+# ※ SQLite版だと "database is locked" でロック衝突するため、MySQLで再現する。
+#   MySQLは行ロックなので、別connが同時に同じテーブルにINSERTしても通る。
+#
+# 前提: Finchコンテナ ar-mysql が起動していること
+#   finch start ar-mysql
 
 require "active_record"
 
 ActiveRecord::Base.establish_connection(
-  adapter: "sqlite3",
-  database: "leak_test.db",   # ファイル DB (スレッド間で共有)
+  adapter: "mysql2",
+  host: "127.0.0.1",
+  port: 3306,
+  username: "root",
+  password: "pass",
+  database: "playground",
   pool: 5
 )
 
@@ -63,5 +73,4 @@ puts "- 別スレッドの 'subthread' は残る (別connなので別トラン�
 puts "- Sidekiq.perform_async は内部でこれと似た挙動をする"
 puts "  → 対策: after_commit コールバック内で enqueue する"
 
-# 後片付け
-File.delete("leak_test.db") if File.exist?("leak_test.db")
+# 後片付け: SQLiteのファイル削除は不要。テーブルだけ残しておけば次回 drop_table で消える
