@@ -16,7 +16,9 @@ SLEEP_DURATION   = 1   # 各スレッドが conn を占有する時間(秒)
 
 ActiveRecord::Base.establish_connection(
   adapter: "sqlite3",
-  database: ":memory:",
+  # :memory: だとスレッド間でDBが共有されず "Could not find table" エラーになるため
+  # ファイルDBに変更。実行前に rm -f /tmp/ar_playground.db で古いファイルを消すこと。
+  database: "/tmp/ar_playground.db",
   pool: POOL_SIZE,
   checkout_timeout: CHECKOUT_TIMEOUT
 )
